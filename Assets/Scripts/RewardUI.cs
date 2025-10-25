@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class RewardUI : MonoBehaviour
 {
+    [SerializeField] private SceneData sceneData;
     public void GoBackToMenu()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneData.mainMenuIndex);
     }
     
     public void PlayAgain()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneData.gameplayIndex);
     }
 }

@@ -3,8 +3,9 @@ using UnityEngine.SceneManagement;
 
 public class GameplayUI : MonoBehaviour
 {
+    [SerializeField] private SceneData sceneData;
     public void EndGame()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(sceneData.mainMenuIndex);
     }
 }
