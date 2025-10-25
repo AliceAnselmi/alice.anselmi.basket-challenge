@@ -224,7 +224,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e56f956a8d6a604fa07c7725797cc04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ringAimTransform: {fileID: 0}
-  backboardAimTransform: {fileID: 0}
   shootAngle: 70
   aimForBackboard: 0
+  randomForcePercentage: 0.05
