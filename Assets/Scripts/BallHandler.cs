@@ -9,6 +9,9 @@ public class BallHandler : MonoBehaviour
     [Header("Testing Parameters")]
     [SerializeField] private float shootAngle = 45f;
     [SerializeField] private bool aimForBackboard = false;
+    
+    [Header("Randomness")]
+    [SerializeField] private float randomForcePercentage = 0.05f;
 
     private Rigidbody m_RigidBody;
     private Vector3 m_AppliedVelocity;
@@ -30,7 +33,7 @@ public class BallHandler : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !ballShot)
+        if (InputManager.Instance.isInputDown && !ballShot)
         {
             m_RigidBody.useGravity = true;
             Vector3 targetPos = aimForBackboard ? backboardAimTransform.position : ringAimTransform.position;
@@ -41,7 +44,6 @@ public class BallHandler : MonoBehaviour
     private void ShootBall(Vector3 targetPos)
     {
         ballShot = true;
-        Debug.Log($"Aiming for: {(aimForBackboard ? "Backboard" : "Ring")} at position {targetPos}");
         Vector3 velocity = CalculateShootVelocity(transform.position, targetPos, shootAngle);
         m_RigidBody.velocity = velocity;
 
@@ -50,7 +52,6 @@ public class BallHandler : MonoBehaviour
         scored = false;
     }
     
-
     private Vector3 CalculateShootVelocity(Vector3 startPos, Vector3 targetPos, float shootAngle)
     {
         float gravity = Mathf.Abs(Physics.gravity.y);
@@ -88,8 +89,13 @@ public class BallHandler : MonoBehaviour
         Vector3 velocity = horizontalDir * horizontalVelocity;
         velocity.y = verticalVelocity;
         
+        // Adding a small randomness to make the shots more fun
+        float randomFactor = Random.Range(-randomForcePercentage, randomForcePercentage);
+        velocity *= (1f + randomFactor);
+        
         return velocity;
     }
+    
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.CompareTag("Backboard"))
