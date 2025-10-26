@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     
     [SerializeField] private GameObject ballPrefab;
-    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private GameObject player;
     public Transform ringAimTransform;
     public Transform backboardAimTransform;
     public MeshCollider ringCollider;
@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
         {
             Destroy(oldBall);
         }
+        MovePlayerToNextPosition();
+        Transform spawnPoint = GameObject.FindGameObjectWithTag("BallSpawnPoint").transform;
         Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
     }
     
@@ -53,4 +55,22 @@ public class GameManager : MonoBehaviour
         Debug.Log("Score now is " + score);
         //TODO later
     }
+    
+    public void MovePlayerToNextPosition()
+    {
+        Transform nextPos = ShootingPositionsManager.Instance.GetNextPosition();
+        if (nextPos != null)
+        {
+            player.transform.position = nextPos.position;
+            player.transform.rotation = nextPos.rotation;
+            
+            // rotate player towards ring
+            Vector3 playerToRing = ringAimTransform.position - player.transform.position;
+            playerToRing.y = 0;
+            player.transform.rotation = Quaternion.LookRotation(playerToRing);
+        }
+
+    }
+
+
 }
