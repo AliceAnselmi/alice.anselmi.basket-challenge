@@ -8,16 +8,15 @@ using Vector3 = UnityEngine.Vector3;
 [RequireComponent(typeof(Rigidbody))]
 public class Ball : MonoBehaviour
 {
-    [Header("Testing Parameters")]
     [SerializeField] private float shootAngle = 45f;
-    [SerializeField] private bool aimForBackboard = false;
-    
-    [Header("Randomness")]
     [SerializeField] private float randomForcePercentage = 0.1f;
 
+    public bool aimForBackboard = false;
+    
     private Rigidbody m_RigidBody;
     private Vector3 m_AppliedVelocity;
     private bool m_HitRing = false;
+    private bool m_HitBackboard = false;
     private bool m_BallShot = false;
     private bool m_Scored = false;
     void Awake()
@@ -63,16 +62,19 @@ public class Ball : MonoBehaviour
         // Only score if ball is falling
         if (m_RigidBody.velocity.y >= 0) return;
 
-        if (horizontalDistance < ringRadius && gameObject.transform.position.y <= ringCenter.y)
+        if (horizontalDistance < ringRadius && transform.position.y <= ringCenter.y)
         {
-            if (m_HitRing)
-            {
                 m_Scored = true;
+            if (GameManager.Instance.isBackboardBonusActive && m_HitBackboard) // Backboard bonus active and hit backboard
+            {
+                GameManager.Instance.ScoreBackboardShot();
+            }
+            else if (m_HitRing) // Hit the ring
+            {
                 GameManager.Instance.ScoreShot();
             }
-            else if (!m_HitRing && transform.position.y <= ringCenter.y)
+            else // Did not hit ring: perfect shot
             {
-                m_Scored = true;
                 GameManager.Instance.ScorePerfectShot();
             }
         }
@@ -141,6 +143,9 @@ public class Ball : MonoBehaviour
         } else if (other.collider.CompareTag("Ring"))
         {
             m_HitRing = true;
+        } else if (other.collider.CompareTag("Backboard"))
+        {
+            m_HitBackboard = true;
         }
     }
 

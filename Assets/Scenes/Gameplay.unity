@@ -168,15 +168,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71cc8da5b3ebd6c419093276534ed084, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  score: 0
   ballPrefab: {fileID: 8695390119984417128, guid: af6d9c5a44e59e44bb768fd7f6f230b8,
     type: 3}
   player: {fileID: 1157792990}
   cameraController: {fileID: 487157466}
   scoreData: {fileID: 11400000, guid: 0be1450848eeab44eab1ef62a48901c3, type: 2}
+  backboard: {fileID: 1243284346}
+  ball: {fileID: 543450653672539342}
+  backboardBonusChance: 0.4
+  bonusDuration: 6
+  score: 0
   ringAimTransform: {fileID: 8666724278728475669}
   backboardAimTransform: {fileID: 1538956753}
   ringCollider: {fileID: 594068968}
+  isBackboardBonusActive: 0
 --- !u!114 &150957720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -647,6 +652,18 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 7224621364414195979}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1243284346 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1243284346, guid: 7ee8d5d57ece5fb43a98f89ae77ff54a,
+    type: 3}
+  m_PrefabInstance: {fileID: 3650653290548822704}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b48b32a0b6605964b8e4b9c76552b0a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1304172931
 GameObject:
   m_ObjectHideFlags: 0
@@ -1447,6 +1464,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8389452869773268767}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &543450653672539342 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 919132149216140922, guid: af6d9c5a44e59e44bb768fd7f6f230b8,
+    type: 3}
+  m_PrefabInstance: {fileID: 8389452869773268767}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e56f956a8d6a604fa07c7725797cc04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3650653290548822704
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1454,11 +1483,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1125327105}
     m_Modifications:
-    - target: {fileID: 3323699048860619419, guid: 7ee8d5d57ece5fb43a98f89ae77ff54a,
-        type: 3}
-      propertyPath: m_TagString
-      value: Backboard
-      objectReference: {fileID: 0}
     - target: {fileID: 7137567189369334107, guid: 7ee8d5d57ece5fb43a98f89ae77ff54a,
         type: 3}
       propertyPath: m_Name
@@ -1672,6 +1696,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1125327105}
     m_Modifications:
+    - target: {fileID: 2567750725267257622, guid: 804a1dd3dc30af245a0b9d3210b7b13c,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2567750725267257622, guid: 804a1dd3dc30af245a0b9d3210b7b13c,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.00183
+      objectReference: {fileID: 0}
     - target: {fileID: 8396691032866291889, guid: 804a1dd3dc30af245a0b9d3210b7b13c,
         type: 3}
       propertyPath: m_Name
