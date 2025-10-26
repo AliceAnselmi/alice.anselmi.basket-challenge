@@ -81,14 +81,14 @@ public class Ball : MonoBehaviour
     private void ShootBall(Vector3 targetPos)
     {
         m_BallShot = true;
-        Vector3 velocity = CalculateShootVelocity(transform.position, targetPos);
-        m_RigidBody.velocity = velocity;
-
         m_Scored = false;
+        CalculateShootVelocity(targetPos);
+        GameManager.Instance.SetupCamera(true);
     }
     
-    private Vector3 CalculateShootVelocity(Vector3 startPos, Vector3 targetPos)
+    private void CalculateShootVelocity(Vector3 targetPos)
     {
+        Vector3 startPos = transform.position;
         float gravity = Mathf.Abs(Physics.gravity.y);
         float shootAngleRad = shootAngle * Mathf.Deg2Rad;
 
@@ -128,7 +128,7 @@ public class Ball : MonoBehaviour
         float randomFactor = Random.Range(0, randomForcePercentage);
         velocity *= (1f + randomFactor);
         
-        return velocity;
+        m_RigidBody.velocity = velocity;
     }
 
     private void OnCollisionEnter(Collision other)
@@ -137,6 +137,7 @@ public class Ball : MonoBehaviour
         {
             m_Scored = false;
             GameManager.Instance.RespawnBall();
+            GameManager.Instance.SetupCamera(false);
         } else if (other.collider.CompareTag("Ring"))
         {
             m_HitRing = true;

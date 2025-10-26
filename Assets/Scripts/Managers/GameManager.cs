@@ -4,15 +4,18 @@ public class GameManager : MonoBehaviour
 {
     public int score = 0;
     public static GameManager Instance { get; private set; }
-    
+
     [SerializeField] private GameObject ballPrefab;
     [SerializeField] private GameObject player;
+    [SerializeField] private CameraController cameraController;
+    [SerializeField] private ScoreData scoreData;
+    
     public Transform ringAimTransform;
     public Transform backboardAimTransform;
     public MeshCollider ringCollider;
-    
-    [SerializeField] private ScoreData scoreData;
-    
+
+    private Transform m_BallTransform;
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,6 +29,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void SetupCamera(bool followBall)
+    {
+        if (followBall)
+        {
+            cameraController.StartFollowingBall(m_BallTransform);
+        }
+        else
+        {
+            cameraController.StopFollowingBall();
+        }
+    }
+
     public void RespawnBall()
     {
         GameObject oldBall = GameObject.FindGameObjectWithTag("Ball");
@@ -33,11 +48,13 @@ public class GameManager : MonoBehaviour
         {
             Destroy(oldBall);
         }
+
         MovePlayerToNextPosition();
         Transform spawnPoint = GameObject.FindGameObjectWithTag("BallSpawnPoint").transform;
-        Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
+        GameObject ball = Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
+        m_BallTransform = ball.transform;
     }
-    
+
     public void ScorePerfectShot()
     {
         score += scoreData.perfectShotScore;
@@ -55,22 +72,16 @@ public class GameManager : MonoBehaviour
         Debug.Log("Score now is " + score);
         //TODO later
     }
-    
+
     public void MovePlayerToNextPosition()
     {
         Transform nextPos = ShootingPositionsManager.Instance.GetNextPosition();
-        if (nextPos != null)
-        {
-            player.transform.position = nextPos.position;
-            player.transform.rotation = nextPos.rotation;
-            
-            // rotate player towards ring
-            Vector3 playerToRing = ringAimTransform.position - player.transform.position;
-            playerToRing.y = 0;
-            player.transform.rotation = Quaternion.LookRotation(playerToRing);
-        }
+        player.transform.position = nextPos.position;
+        player.transform.rotation = nextPos.rotation;
 
+        // rotate player towards ring
+        Vector3 playerToRing = ringAimTransform.position - player.transform.position;
+        playerToRing.y = 0;
+        player.transform.rotation = Quaternion.LookRotation(playerToRing);
     }
-
-
 }
