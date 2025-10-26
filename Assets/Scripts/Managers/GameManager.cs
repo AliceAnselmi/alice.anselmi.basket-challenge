@@ -1,18 +1,22 @@
 using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    
+    private static float s_MatchDuration = 120f; // two minutes in seconds
 
     [Header("References")]
     [SerializeField] private GameObject ballPrefab;
     [SerializeField] private GameObject player;
     [SerializeField] private CameraController cameraController;
-    [SerializeField] private ScoreData scoreData;
     [SerializeField] private Ball ball;
+    [SerializeField] private ScoreData scoreData;
+    [SerializeField] private SceneData sceneData;
     public MeshCollider ringCollider;
     
     [Header("Backboard Bonus Settings")]
@@ -23,12 +27,15 @@ public class GameManager : MonoBehaviour
     [Header("Aim Transforms")]
     public Transform ringAimTransform;
     public Transform backboardAimTransform;
-    [HideInInspector] public bool isBackboardBonusActive = false;
     private Transform m_BallTransform;
     private BonusRarity m_CurrentBonusRarity;
-    private int m_Score = 0;
     
-    public enum BonusRarity
+    [HideInInspector] public bool isBackboardBonusActive = false;
+    [HideInInspector] public bool canShoot = true;
+    private int m_Score = 0;
+    private float m_Timer = 0f;
+    
+    private enum BonusRarity
     {
         Common,
         Rare,
@@ -48,6 +55,23 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        StartCoroutine(TimerRoutine());
+    }
+    
+    private IEnumerator TimerRoutine()
+    {
+        WaitForSeconds delay = new WaitForSeconds(1);
+        while (m_Timer < s_MatchDuration)
+        {
+            Debug.Log("Timer: " + m_Timer);
+            m_Timer += 1f;
+            yield return delay;
+        }
+        EndGame();
+    }
+    
     private void Update()
     {
         // roll for backboard bonus activation
@@ -153,5 +177,11 @@ public class GameManager : MonoBehaviour
 
         m_Score += bonusScore;
         Debug.Log("Score now is " + m_Score);
+    }
+
+    private void EndGame()
+    {
+        canShoot = false;
+        SceneManager.LoadScene(sceneData.rewardIndex);
     }
 }

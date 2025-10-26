@@ -32,7 +32,7 @@ public class Ball : MonoBehaviour
     }
     void Update()
     {
-        if (InputManager.Instance.isInputDown && !m_BallShot)
+        if (GameManager.Instance.canShoot && InputManager.Instance.isInputDown && !m_BallShot)
         {
             m_RigidBody.useGravity = true;
             Vector3 ringAimTransform = GameManager.Instance.ringAimTransform.position;
