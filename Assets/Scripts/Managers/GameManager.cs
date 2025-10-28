@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Backboard backboard;
     [SerializeField] private float backboardBonusChance = 0.3f;
     [SerializeField] private float bonusDuration = 6f;
+    private float m_RollInterval = 1f;
+    private float m_RollTimer = 0f;
 
     [Header("Aim Transforms")]
     public Transform ringAimTransform;
@@ -33,7 +35,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public bool isBackboardBonusActive = false;
     [HideInInspector] public bool canShoot = true;
     private int m_Score = 0;
-    private float m_Timer = 0f;
+    private float m_Timer = 120f;
     
     private enum BonusRarity
     {
@@ -63,10 +65,10 @@ public class GameManager : MonoBehaviour
     private IEnumerator TimerRoutine()
     {
         WaitForSeconds delay = new WaitForSeconds(1);
-        while (m_Timer < s_MatchDuration)
+        while (m_Timer > 0)
         {
-            Debug.Log("Timer: " + m_Timer);
-            m_Timer += 1f;
+            m_Timer -= 1f;
+            UIManager.Instance.UpdateTimer(m_Timer);
             yield return delay;
         }
         EndGame();
@@ -74,8 +76,13 @@ public class GameManager : MonoBehaviour
     
     private void Update()
     {
-        // roll for backboard bonus activation
-        RollBackboardBonus();
+        // Roll for backboard bonus activation
+        m_RollTimer += Time.deltaTime;
+        if (m_RollTimer >= m_RollInterval)
+        {
+            m_RollTimer = 0f;
+            RollBackboardBonus();
+        }
     }
 
     public void SetupCamera(bool followBall)
@@ -118,7 +125,10 @@ public class GameManager : MonoBehaviour
 
     private void RollBackboardBonus()
     {
-        if (Random.value < backboardBonusChance && !isBackboardBonusActive)
+        if (isBackboardBonusActive)
+            return;
+        float rolledValue = Random.value;
+        if (rolledValue < backboardBonusChance)
         {
             ball.aimForBackboard = true; //TODO this is for testing purposes only, reference to ball will be removed later
             isBackboardBonusActive = true;
@@ -146,17 +156,21 @@ public class GameManager : MonoBehaviour
         isBackboardBonusActive = false;
         backboard.StopBlinking();
     }
+    
+    private void UpdateScore(int scoreToAdd)
+    {
+        m_Score += scoreToAdd;
+        UIManager.Instance.UpdateScore(m_Score);
+    }
 
     public void ScorePerfectShot()
     {
-        m_Score += scoreData.perfectShotScore;
-        Debug.Log("Score now is " + m_Score);
+        UpdateScore(scoreData.perfectShotScore);
     }
 
     public void ScoreShot()
     {
-        m_Score += scoreData.normalShotScore;
-        Debug.Log("Score now is " + m_Score);
+        UpdateScore(scoreData.normalShotScore);
     }
 
     public void ScoreBackboardShot()
@@ -174,9 +188,7 @@ public class GameManager : MonoBehaviour
                 bonusScore = scoreData.veryRareBonusScore;
                 break;
         }
-
-        m_Score += bonusScore;
-        Debug.Log("Score now is " + m_Score);
+        UpdateScore(bonusScore);
     }
 
     private void EndGame()
