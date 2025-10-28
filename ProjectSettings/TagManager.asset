@@ -8,6 +8,7 @@ TagManager:
   - Ring
   - Backboard
   - Floor
+  - BallSpawnPoint
   layers:
   - Default
   - TransparentFX

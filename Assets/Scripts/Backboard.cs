@@ -4,7 +4,7 @@ using UnityEngine;
 public class Backboard : MonoBehaviour
 {
     [SerializeField] private float blinkInterval = 0.8f;
-
+    [SerializeField] private Color blinkColor = Color.yellow;
     private Renderer m_Renderer;
     private Color m_BaseColor;
     private void Awake()
@@ -28,10 +28,11 @@ public class Backboard : MonoBehaviour
     {
         while (GameManager.Instance.isBackboardBonusActive)
         {
-            m_Renderer.enabled = !m_Renderer.enabled;
+            m_Renderer.material.color = blinkColor;
+            yield return new WaitForSeconds(blinkInterval);
+            m_Renderer.material.color = m_BaseColor;
             yield return new WaitForSeconds(blinkInterval);
         }
-        m_Renderer.enabled = true;
         m_Renderer.material.color = m_BaseColor;
     }
 }

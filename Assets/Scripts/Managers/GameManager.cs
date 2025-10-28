@@ -8,7 +8,9 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     
-    private static float s_MatchDuration = 120f; // two minutes in seconds
+    [Header("Game Settings")]
+    [SerializeField] private float matchDuration = 120f; // two minutes in seconds
+    [SerializeField] private float gravity = -9.81f;
 
     [Header("References")]
     [SerializeField] private GameObject ballPrefab;
@@ -32,8 +34,10 @@ public class GameManager : MonoBehaviour
     private Transform m_BallTransform;
     private BonusRarity m_CurrentBonusRarity;
     
+    [HideInInspector] public float shootForce = 0f;
     [HideInInspector] public bool isBackboardBonusActive = false;
-    [HideInInspector] public bool canShoot = true;
+    [HideInInspector] public bool gameEnded = false;
+    [HideInInspector] public bool canShoot = false;
     private int m_Score = 0;
     private float m_Timer = 120f;
     
@@ -46,6 +50,9 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+        Physics.gravity = new Vector3(0, gravity, 0);
         if (Instance == null)
         {
             Instance = this;
@@ -59,6 +66,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        m_BallTransform = GameObject.FindGameObjectWithTag("Ball").transform;
         StartCoroutine(TimerRoutine());
     }
     
@@ -97,18 +105,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void RespawnBall()
+    public void RefreshMatch()
+    {
+        InputManager.Instance.hasInputEnded = false;
+        UIManager.Instance.ResetInputBar();
+        shootForce = 0f;
+        MovePlayerToNextPosition();
+        RespawnBall();
+        SetupCamera(false);
+        canShoot = true;
+    }
+
+    private void RespawnBall()
     {
         GameObject oldBall = GameObject.FindGameObjectWithTag("Ball");
         if (oldBall != null)
         {
             Destroy(oldBall);
         }
-
-        MovePlayerToNextPosition();
         Transform spawnPoint = GameObject.FindGameObjectWithTag("BallSpawnPoint").transform;
-        GameObject ball = Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
-        m_BallTransform = ball.transform;
+        GameObject newBall = Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
+        m_BallTransform = newBall.transform;
     }
     
     private void MovePlayerToNextPosition()
@@ -161,6 +178,7 @@ public class GameManager : MonoBehaviour
     {
         m_Score += scoreToAdd;
         UIManager.Instance.UpdateScore(m_Score);
+        UIManager.Instance.ShowScoreFlyer(scoreToAdd, m_BallTransform.transform.position);
     }
 
     public void ScorePerfectShot()
@@ -193,7 +211,7 @@ public class GameManager : MonoBehaviour
 
     private void EndGame()
     {
-        canShoot = false;
+        gameEnded = true;
         SceneManager.LoadScene(sceneData.rewardIndex);
     }
 }

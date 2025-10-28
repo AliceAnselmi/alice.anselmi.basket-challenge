@@ -1,54 +1,96 @@
 using UnityEngine;
 
-public class InputManager  : MonoBehaviour
+public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
-    public Vector2 inputPosition;
-    public bool isInputDown;
-    public bool isInputUp;
+    
+    [HideInInspector] public float incrementalSwipeDelta = 0f;
+    [HideInInspector] public bool hasInputEnded = false;
+    [HideInInspector] public Vector2 inputPosition;
+    private float m_PreviousTouchY = 0f;
+    private Vector2 startTouch;
 
     private void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
         else
-        {
             Destroy(gameObject);
-        }
     }
+
     void Update()
     {
-        isInputDown = false;
-        isInputUp = false;
-
+        if(!GameManager.Instance.canShoot)
+            return;
 #if UNITY_EDITOR || UNITY_STANDALONE
+        HandleMouseInput();
+#else
+        HandleTouchInput();
+#endif
+    }
+
+    private void HandleTouchInput()
+    {
+        if (Input.touchCount == 0) return;
+
+        Touch touch = Input.GetTouch(0);
+
+        switch (touch.phase)
+        {
+            case TouchPhase.Began:
+                m_PreviousTouchY = touch.position.y;
+                OnInputStart();
+                break;
+            case TouchPhase.Moved:
+                incrementalSwipeDelta = (touch.position.y - m_PreviousTouchY) / Screen.height;
+                inputPosition = touch.position;
+                OnInputHold();
+                m_PreviousTouchY = touch.position.y;
+                break;
+
+            case TouchPhase.Ended:
+            case TouchPhase.Canceled:
+                OnInputEnd();
+                break;
+        }
+    }
+
+    private void HandleMouseInput()
+    {
         if (Input.GetMouseButtonDown(0))
         {
-            isInputDown = true;
-            inputPosition = Input.mousePosition;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            isInputUp = true;
-            inputPosition = Input.mousePosition;
+            m_PreviousTouchY =  Input.mousePosition.y;
+            OnInputStart();
         }
 
-#elif UNITY_IOS || UNITY_ANDROID
-        if (Input.touchCount > 0)
+        if (Input.GetMouseButton(0))
         {
-            Touch touch = Input.GetTouch(0);
-            inputPosition = touch.position;
-
-            if (touch.phase == TouchPhase.Began) {
-                isInputDown = true;
-            }
-            else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled) {
-                isInputUp = true;
-            }
+            inputPosition = Input.mousePosition;
+            incrementalSwipeDelta = (Input.mousePosition.y - m_PreviousTouchY) / Screen.height;
+            OnInputHold();
+            m_PreviousTouchY = Input.mousePosition.y;
         }
-#endif
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            OnInputEnd();
+        }
+    }
+
+    private void OnInputStart()
+    {
+        GameManager.Instance.shootForce = 0f;
+    }
+
+    private void OnInputHold()
+    {
+        if(incrementalSwipeDelta < 0f) incrementalSwipeDelta = 0f; // Prevent negative swipe
+        GameManager.Instance.shootForce += incrementalSwipeDelta;
+    }
+    
+    private void OnInputEnd()
+    {
+        incrementalSwipeDelta = 0f;
+        hasInputEnded = true;
     }
 }

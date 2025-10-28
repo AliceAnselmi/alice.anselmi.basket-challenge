@@ -7,7 +7,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private SceneData sceneData;
     public void PlayGame()
     {
-        SceneManager.LoadScene(sceneData.mainMenuIndex);
+        SceneManager.LoadScene(sceneData.gameplayIndex);
     }
     
 }

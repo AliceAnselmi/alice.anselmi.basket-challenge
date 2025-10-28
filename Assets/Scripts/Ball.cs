@@ -9,15 +9,13 @@ using Vector3 = UnityEngine.Vector3;
 public class Ball : MonoBehaviour
 {
     [SerializeField] private float shootAngle = 45f;
-    [SerializeField] private float randomForcePercentage = 0.1f;
-
+    [SerializeField] private float velocityMultiplier = 1f;
     public bool aimForBackboard = false;
     
     private Rigidbody m_RigidBody;
     private Vector3 m_AppliedVelocity;
     private bool m_HitRing = false;
     private bool m_HitBackboard = false;
-    private bool m_BallShot = false;
     private bool m_Scored = false;
     void Awake()
     {
@@ -32,9 +30,8 @@ public class Ball : MonoBehaviour
     }
     void Update()
     {
-        if (GameManager.Instance.canShoot && InputManager.Instance.isInputDown && !m_BallShot)
+        if (!GameManager.Instance.gameEnded && InputManager.Instance.hasInputEnded && GameManager.Instance.canShoot)
         {
-            m_RigidBody.useGravity = true;
             Vector3 ringAimTransform = GameManager.Instance.ringAimTransform.position;
             Vector3 backboardAimTransform = GameManager.Instance.backboardAimTransform.position;
             Vector3 targetPos = aimForBackboard ? backboardAimTransform : ringAimTransform;
@@ -44,8 +41,8 @@ public class Ball : MonoBehaviour
     
     void FixedUpdate()
     {
-        if (!m_BallShot || m_Scored) return;
-
+        if(m_Scored)
+            return;
         Vector3 ringCenter = GameManager.Instance.ringAimTransform.position;
         MeshCollider ringCollider = GameManager.Instance.ringCollider;
         float ringRadius = 0;
@@ -64,17 +61,19 @@ public class Ball : MonoBehaviour
 
         if (horizontalDistance < ringRadius && transform.position.y <= ringCenter.y)
         {
-                m_Scored = true;
             if (GameManager.Instance.isBackboardBonusActive && m_HitBackboard) // Backboard bonus active and hit backboard
             {
+                m_Scored = true;
                 GameManager.Instance.ScoreBackboardShot();
             }
             else if (m_HitRing) // Hit the ring
             {
+                m_Scored = true;
                 GameManager.Instance.ScoreShot();
             }
             else // Did not hit ring: perfect shot
             {
+                m_Scored = true;
                 GameManager.Instance.ScorePerfectShot();
             }
         }
@@ -82,8 +81,8 @@ public class Ball : MonoBehaviour
 
     private void ShootBall(Vector3 targetPos)
     {
-        m_BallShot = true;
-        m_Scored = false;
+        GameManager.Instance.canShoot = false;
+        m_RigidBody.useGravity = true;
         CalculateShootVelocity(targetPos);
         GameManager.Instance.SetupCamera(true);
     }
@@ -126,9 +125,9 @@ public class Ball : MonoBehaviour
         Vector3 velocity = horizontalDir * horizontalVelocity;
         velocity.y = verticalVelocity;
         
-        // Adding a small randomness to make the shots more fun
-        float randomFactor = Random.Range(0, randomForcePercentage);
-        velocity *= (1f + randomFactor);
+        // Add initial force depending on swipe
+        float launchForce = Mathf.Lerp(0f, .3f,GameManager.Instance.shootForce);
+        velocity *= (1f + launchForce) * velocityMultiplier;
         
         m_RigidBody.velocity = velocity;
     }
@@ -137,9 +136,7 @@ public class Ball : MonoBehaviour
     {
         if(other.collider.CompareTag("Floor"))
         {
-            m_Scored = false;
-            GameManager.Instance.RespawnBall();
-            GameManager.Instance.SetupCamera(false);
+            GameManager.Instance.RefreshMatch();
         } else if (other.collider.CompareTag("Ring"))
         {
             m_HitRing = true;
