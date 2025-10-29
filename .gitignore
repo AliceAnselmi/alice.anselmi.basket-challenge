@@ -100,7 +100,8 @@ InitTestScene*.unity*
 
 # User-specific files
 /[Aa]ssets/TextMesh Pro/*
+/Assets/Art/Environment/AllSkyFree
+!/Assets/Art/Environment/AllSkyFree/Epic_BlueSunset
 
 # Rider files
 **/.idea
-
