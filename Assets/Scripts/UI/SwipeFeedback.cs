@@ -21,7 +21,7 @@ public class SwipeFeedback : MonoBehaviour
 
     private void Update()
     {
-        if ((Input.GetMouseButton(0) || Input.touchCount > 0 ) && GameManager.Instance.canShoot)
+        if ((Input.GetMouseButton(0) || Input.touchCount > 0 ) && GameManager.Instance.player.canShoot)
         {
             UIManager.Instance.DrawSwipeLine(rectTransform, followSpeed);
             canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 1f, fadeSpeed * Time.deltaTime); // Fade in

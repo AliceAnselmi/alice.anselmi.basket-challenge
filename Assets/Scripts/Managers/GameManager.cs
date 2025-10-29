@@ -1,5 +1,5 @@
 using System.Collections;
-using Unity.VisualScripting;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
@@ -7,211 +7,198 @@ using Random = UnityEngine.Random;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    
+
     [Header("Game Settings")]
     [SerializeField] private float matchDuration = 120f; // two minutes in seconds
     [SerializeField] private float gravity = -9.81f;
+    [HideInInspector] public float shootForce = 0f;
+    [HideInInspector] public bool gameEnded;
+    public bool isBackboardBonusActive = false;
+    private float timer;
+
+    [Header("Players")]
+    public MatchPlayer player;
+    public MatchPlayer opponent;
 
     [Header("References")]
     [SerializeField] private GameObject ballPrefab;
-    [SerializeField] private GameObject player;
     [SerializeField] private CameraController cameraController;
-    [SerializeField] private Ball ball;
-    [SerializeField] private ScoreData scoreData;
     [SerializeField] private SceneData sceneData;
+    public ScoreData scoreData;
     public MeshCollider ringCollider;
-    
-    [Header("Backboard Bonus Settings")]
-    [SerializeField] private Backboard backboard;
-    [SerializeField] private float backboardBonusChance = 0.3f;
-    [SerializeField] private float bonusDuration = 6f;
-    private float m_RollInterval = 1f;
-    private float m_RollTimer = 0f;
+
 
     [Header("Aim Transforms")]
     public Transform ringAimTransform;
     public Transform backboardAimTransform;
-    private Transform m_BallTransform;
-    private BonusRarity m_CurrentBonusRarity;
-    
-    [HideInInspector] public float shootForce = 0f;
-    [HideInInspector] public bool isBackboardBonusActive = false;
-    [HideInInspector] public bool gameEnded = false;
-    [HideInInspector] public bool canShoot = false;
-    private int m_Score = 0;
-    private float m_Timer = 120f;
-    
-    private enum BonusRarity
-    {
-        Common,
-        Rare,
-        VeryRare
-    }
 
     private void Awake()
     {
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
-        Physics.gravity = new Vector3(0, gravity, 0);
+
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
-        {
-            Destroy(gameObject);
-        }
+        else Destroy(gameObject);
     }
 
     private void Start()
     {
-        m_BallTransform = GameObject.FindGameObjectWithTag("Ball").transform;
+        Physics.gravity = new Vector3(0, gravity, 0);
+        timer = matchDuration;
         StartCoroutine(TimerRoutine());
+
+        InitializeMatchPlayer(player);
+        InitializeMatchPlayer(opponent);
+
+        StartCoroutine(OpponentAIAutoShootRoutine());
     }
     
     private IEnumerator TimerRoutine()
     {
         WaitForSeconds delay = new WaitForSeconds(1);
-        while (m_Timer > 0)
+        while (timer > 0)
         {
-            m_Timer -= 1f;
-            UIManager.Instance.UpdateTimer(m_Timer);
+            timer -= 1f;
+            UIManager.Instance.UpdateTimer(timer);
             yield return delay;
         }
         EndGame();
     }
-    
-    private void Update()
+
+    private void InitializeMatchPlayer(MatchPlayer matchPlayer)
     {
-        // Roll for backboard bonus activation
-        m_RollTimer += Time.deltaTime;
-        if (m_RollTimer >= m_RollInterval)
+        matchPlayer.ball.owner = matchPlayer;
+        matchPlayer.canShoot = true;
+    }
+    
+    private IEnumerator OpponentAIAutoShootRoutine()
+    {
+        while (!gameEnded)
         {
-            m_RollTimer = 0f;
-            RollBackboardBonus();
+            // Wait for a random time based on difficulty
+            float wait = Random.Range(DifficultyManager.Instance.shootIntervalMin, DifficultyManager.Instance.shootIntervalMax);
+            yield return new WaitForSeconds(wait);
+
+            if (opponent.canShoot)
+            {
+                float chance = Random.value;
+                if (chance <= DifficultyManager.Instance.accuracy)
+                {
+                    opponent.ball.aimForBackboard = GameManager.Instance.isBackboardBonusActive;
+                    opponent.ball.shootAngle += Random.Range(-DifficultyManager.Instance.aimError * 10f, DifficultyManager.Instance.aimError * 10f);
+                }
+                else
+                {
+                    // if miss, add a larger random error
+                    opponent.ball.shootAngle += Random.Range(-15f, 15f);
+                    opponent.ball.aimForBackboard = false;
+                }
+
+                opponent.ball.ShootBall();
+                opponent.canShoot = false;
+            }
         }
     }
 
+    public void RefreshMatch(MatchPlayer matchPlayer)
+    {
+        if (gameEnded) return;
+        
+        MovePlayerToNextPosition(matchPlayer);
+
+        // Reset input and camera for player 
+        if (matchPlayer.playerType == MatchPlayer.PlayerType.Player)
+        {
+            InputManager.Instance.hasInputEnded = false;
+            UIManager.Instance.ResetInputBar();
+            shootForce = 0f;
+            SetupCamera(false);
+        }
+
+        RespawnBall(matchPlayer);
+        matchPlayer.canShoot = true;
+    }
+    
+    private void MovePlayerToNextPosition(MatchPlayer playerToMove)
+    {
+        Transform nextPos = ShootingPositionsManager.Instance.GetNextPosition();
+        playerToMove.transform.position = nextPos.position;
+
+        Vector3 playerToRing = ringAimTransform.position - playerToMove.transform.position;
+        playerToRing.y = 0;
+        playerToMove.transform.rotation = Quaternion.LookRotation(playerToRing);
+    }
+    public void ScorePerfectShot(MatchPlayer matchPlayer)
+    {
+        UpdateScore(matchPlayer, scoreData.perfectShotScore);
+    }
+    
     public void SetupCamera(bool followBall)
     {
         if (followBall)
-        {
-            cameraController.StartFollowingBall(m_BallTransform);
-        }
+            cameraController.StartFollowingBall(player.ballTransform);
         else
-        {
             cameraController.StopFollowingBall();
-        }
     }
 
-    public void RefreshMatch()
+    private void RespawnBall(MatchPlayer matchPlayer)
     {
-        InputManager.Instance.hasInputEnded = false;
-        UIManager.Instance.ResetInputBar();
-        shootForce = 0f;
-        MovePlayerToNextPosition();
-        RespawnBall();
-        SetupCamera(false);
-        canShoot = true;
+        if (matchPlayer.ball != null)
+            Destroy(matchPlayer.ball.gameObject);
+
+        GameObject newBall = InstantiateBall(matchPlayer.ballSpawnPoint.position);
+        matchPlayer.ball = newBall.GetComponent<Ball>();
+        matchPlayer.ballTransform = matchPlayer.ball.transform;
+        matchPlayer.ball.owner = matchPlayer;
     }
 
-    private void RespawnBall()
+    private GameObject InstantiateBall(Vector3 position)
     {
-        GameObject oldBall = GameObject.FindGameObjectWithTag("Ball");
-        if (oldBall != null)
-        {
-            Destroy(oldBall);
-        }
-        Transform spawnPoint = GameObject.FindGameObjectWithTag("BallSpawnPoint").transform;
-        GameObject newBall = Instantiate(ballPrefab, spawnPoint.position, Quaternion.identity);
-        m_BallTransform = newBall.transform;
+        return Instantiate(ballPrefab, position, Quaternion.identity);
     }
     
-    private void MovePlayerToNextPosition()
+    public void ScoreShot(MatchPlayer matchPlayer)
     {
-        Transform nextPos = ShootingPositionsManager.Instance.GetNextPosition();
-        player.transform.position = nextPos.position;
-        player.transform.rotation = nextPos.rotation;
-
-        // rotate player towards ring
-        Vector3 playerToRing = ringAimTransform.position - player.transform.position;
-        playerToRing.y = 0;
-        player.transform.rotation = Quaternion.LookRotation(playerToRing);
+        UpdateScore(matchPlayer, scoreData.normalShotScore);
     }
 
-    private void RollBackboardBonus()
+    public void ScoreBackboardShot(MatchPlayer matchPlayer) 
     {
-        if (isBackboardBonusActive)
-            return;
-        float rolledValue = Random.value;
-        if (rolledValue < backboardBonusChance)
+        UpdateScore(matchPlayer, scoreData.currentBonusScore);
+    }
+
+    private void UpdateScore(MatchPlayer matchPlayer, int amount)
+    {
+        matchPlayer.score += amount;
+        UIManager.Instance.UpdateScore(matchPlayer.score, matchPlayer);
+        if (matchPlayer == player)
         {
-            ball.aimForBackboard = true; //TODO this is for testing purposes only, reference to ball will be removed later
-            isBackboardBonusActive = true;
-            
-            switch (Random.value)
-            {
-                case < 0.7f:
-                    m_CurrentBonusRarity = BonusRarity.Common;
-                    break;
-                case < 0.9f:
-                    m_CurrentBonusRarity = BonusRarity.Rare;
-                    break;
-                default:
-                    m_CurrentBonusRarity = BonusRarity.VeryRare;
-                    break;
-            }
-            
-            backboard.StartBlinking();
-            StartCoroutine(DisableBonusAfterDelay());
+            UIManager.Instance.ShowScoreFlyer(amount, matchPlayer.ballTransform.position);
         }
+        
     }
-    private IEnumerator DisableBonusAfterDelay()
+    
+    public void EnableBackboardBonus()
     {
-        yield return new WaitForSeconds(bonusDuration);
+        isBackboardBonusActive = true;
+        player.ball.aimForBackboard = true;
+        opponent.ball.aimForBackboard = true;
+    }
+    
+    public void DisableBackboardBonus()
+    {
         isBackboardBonusActive = false;
-        backboard.StopBlinking();
+        player.ball.aimForBackboard = false;
+        opponent.ball.aimForBackboard = false;
     }
-    
-    private void UpdateScore(int scoreToAdd)
-    {
-        m_Score += scoreToAdd;
-        UIManager.Instance.UpdateScore(m_Score);
-        UIManager.Instance.ShowScoreFlyer(scoreToAdd, m_BallTransform.transform.position);
-    }
-
-    public void ScorePerfectShot()
-    {
-        UpdateScore(scoreData.perfectShotScore);
-    }
-
-    public void ScoreShot()
-    {
-        UpdateScore(scoreData.normalShotScore);
-    }
-
-    public void ScoreBackboardShot()
-    {
-        int bonusScore = 0;
-        switch (m_CurrentBonusRarity)
-        {
-            case BonusRarity.Common:
-                bonusScore = scoreData.commonBonusScore;
-                break;
-            case BonusRarity.Rare:
-                bonusScore = scoreData.rareBonusScore;
-                break;
-            case BonusRarity.VeryRare:
-                bonusScore = scoreData.veryRareBonusScore;
-                break;
-        }
-        UpdateScore(bonusScore);
-    }
-
     private void EndGame()
     {
         gameEnded = true;
         SceneManager.LoadScene(sceneData.rewardIndex);
     }
+
 }

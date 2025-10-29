@@ -1,22 +1,24 @@
-using System;
-using System.Collections;
-using System.Numerics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
-    using Vector2 = UnityEngine.Vector2;
+using Vector2 = UnityEngine.Vector2;
+
 [RequireComponent(typeof(Rigidbody))]
 public class Ball : MonoBehaviour
 {
-    [SerializeField] private float shootAngle = 45f;
-    [SerializeField] private float velocityMultiplier = 1f;
+    public float shootAngle = 45f;
     public bool aimForBackboard = false;
+    public MatchPlayer owner;
     
     private Rigidbody m_RigidBody;
     private Vector3 m_AppliedVelocity;
     private bool m_HitRing = false;
     private bool m_HitBackboard = false;
     private bool m_Scored = false;
+
+    private Transform ringTarget;
+    private Transform backboardTarget;
+
     void Awake()
     {
         m_RigidBody = GetComponent<Rigidbody>();
@@ -26,23 +28,27 @@ public class Ball : MonoBehaviour
     {
         // Preventing ball from falling down
         m_RigidBody.useGravity = false;
-        
+        ringTarget = GameManager.Instance.ringAimTransform;
+        backboardTarget = GameManager.Instance.backboardAimTransform;
     }
-    void Update()
+
+    private void Update()
     {
-        if (!GameManager.Instance.gameEnded && InputManager.Instance.hasInputEnded && GameManager.Instance.canShoot)
+        if (owner.playerType == MatchPlayer.PlayerType.Player
+            && owner.canShoot
+            && InputManager.Instance.hasInputEnded
+            && !GameManager.Instance.gameEnded
+            )
         {
-            Vector3 ringAimTransform = GameManager.Instance.ringAimTransform.position;
-            Vector3 backboardAimTransform = GameManager.Instance.backboardAimTransform.position;
-            Vector3 targetPos = aimForBackboard ? backboardAimTransform : ringAimTransform;
-            ShootBall(targetPos);
+            ShootBall();
         }
     }
-    
+
     void FixedUpdate()
     {
         if(m_Scored)
             return;
+        
         Vector3 ringCenter = GameManager.Instance.ringAimTransform.position;
         MeshCollider ringCollider = GameManager.Instance.ringCollider;
         float ringRadius = 0;
@@ -64,27 +70,31 @@ public class Ball : MonoBehaviour
             if (GameManager.Instance.isBackboardBonusActive && m_HitBackboard) // Backboard bonus active and hit backboard
             {
                 m_Scored = true;
-                GameManager.Instance.ScoreBackboardShot();
+                GameManager.Instance.ScoreBackboardShot(owner);
             }
             else if (m_HitRing) // Hit the ring
             {
                 m_Scored = true;
-                GameManager.Instance.ScoreShot();
+                GameManager.Instance.ScoreShot(owner);
             }
             else // Did not hit ring: perfect shot
             {
                 m_Scored = true;
-                GameManager.Instance.ScorePerfectShot();
+                GameManager.Instance.ScorePerfectShot(owner);
             }
         }
     }
 
-    private void ShootBall(Vector3 targetPos)
+    public void ShootBall()
     {
-        GameManager.Instance.canShoot = false;
         m_RigidBody.useGravity = true;
+        Vector3 targetPos = aimForBackboard ? backboardTarget.position : ringTarget.position;
         CalculateShootVelocity(targetPos);
-        GameManager.Instance.SetupCamera(true);
+        if (!owner.isAI)
+        {
+            GameManager.Instance.SetupCamera(true);
+            owner.canShoot = false;
+        }
     }
     
     private void CalculateShootVelocity(Vector3 targetPos)
@@ -126,21 +136,23 @@ public class Ball : MonoBehaviour
         velocity.y = verticalVelocity;
         
         // Add initial force depending on swipe
-        float launchForce = Mathf.Lerp(0f, .3f,GameManager.Instance.shootForce);
-        velocity *= (1f + launchForce) * velocityMultiplier;
-        
+        float launchForce = Mathf.Lerp(-.1f, .2f,GameManager.Instance.shootForce);
+        velocity *= 1f + launchForce;
+
         m_RigidBody.velocity = velocity;
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        if(other.collider.CompareTag("Floor"))
+        if (other.collider.CompareTag("Floor"))
         {
-            GameManager.Instance.RefreshMatch();
-        } else if (other.collider.CompareTag("Ring"))
+            GameManager.Instance.RefreshMatch(owner);
+        }
+        else if (other.collider.CompareTag("Ring"))
         {
             m_HitRing = true;
-        } else if (other.collider.CompareTag("Backboard"))
+        }
+        else if (other.collider.CompareTag("Backboard"))
         {
             m_HitBackboard = true;
         }

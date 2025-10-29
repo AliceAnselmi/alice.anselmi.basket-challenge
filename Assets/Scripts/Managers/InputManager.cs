@@ -20,7 +20,7 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        if(!GameManager.Instance.canShoot)
+        if(!GameManager.Instance.player.canShoot)
             return;
 #if UNITY_EDITOR || UNITY_STANDALONE
         HandleMouseInput();

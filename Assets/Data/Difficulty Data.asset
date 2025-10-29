@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 444fdf6b0caea704fb1f090f84548447, type: 3}
+  m_Name: Difficulty Data
+  m_EditorClassIdentifier: 
+  easyAccuracy: 0.8
+  easyAimError: 0.05
+  easyShootIntervalMin: 0
+  easyShootIntervalMax: 3
+  mediumAccuracy: 0.6
+  mediumAimError: 0.1
+  mediumShootIntervalMin: 1
+  mediumShootIntervalMax: 2.5
+  hardAccuracy: 0.4
+  hardAimError: 0.15
+  hardShootIntervalMin: 1.5
+  hardShootIntervalMax: 2

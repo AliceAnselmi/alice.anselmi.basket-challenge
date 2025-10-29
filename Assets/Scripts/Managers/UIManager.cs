@@ -9,7 +9,8 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private Camera camera;
     [SerializeField] private Canvas canvas;
-    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI opponentScoreText;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private GameObject scoreFlyerPrefab;
     [SerializeField] private Image inputBarFill;
@@ -32,10 +33,18 @@ public class UIManager : MonoBehaviour
     {
         UpdateInputBarValue();
     }
-    public void UpdateScore(int newScore)
+    public void UpdateScore(int newScore, MatchPlayer matchPlayer)
     {
-        scoreText.text = $"SCORE: {newScore}";
+        if (matchPlayer.playerType == MatchPlayer.PlayerType.Player)
+        {
+            playerScoreText.text = $"{newScore}";
+        }
+        else
+        {
+            opponentScoreText.text = $"{newScore}";
+        }
     }
+
     
 
     public void ShowScoreFlyer(int points, Vector3 worldPosition)

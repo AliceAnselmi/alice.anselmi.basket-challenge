@@ -225,5 +225,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shootAngle: 60
-  velocityMultiplier: 1
   aimForBackboard: 0
+  owner: {fileID: 0}

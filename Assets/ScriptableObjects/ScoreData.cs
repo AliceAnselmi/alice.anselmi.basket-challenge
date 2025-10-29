@@ -8,4 +8,6 @@ public class ScoreData : ScriptableObject
     public int commonBonusScore = 4;
     public int rareBonusScore = 6;
     public int veryRareBonusScore = 8;
+    
+    public int currentBonusScore = 0;
 }

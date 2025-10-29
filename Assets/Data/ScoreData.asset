@@ -14,3 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   perfectShotScore: 3
   normalShotScore: 2
+  commonBonusScore: 4
+  rareBonusScore: 6
+  veryRareBonusScore: 8
+  currentBonusScore: 0
