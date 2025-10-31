@@ -1,37 +1,37 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SwipeFeedback : MonoBehaviour
 {
-    [SerializeField] private Canvas canvas;
-    [SerializeField] private Image feedbackImage;
-    [SerializeField] private float followSpeed = 15f;
-    [SerializeField] private float fadeSpeed = 5f;
-
-    private RectTransform rectTransform;
-    private CanvasGroup canvasGroup;
-    private bool isVisible = false;
+    [SerializeField] private TrailRenderer trail;
+    [SerializeField] private Camera camera;
 
     private void Awake()
     {
-        rectTransform = feedbackImage.GetComponent<RectTransform>();
-        canvasGroup = feedbackImage.GetComponent<CanvasGroup>();
-        canvasGroup.alpha = 0f;
+        if (camera == null)
+            camera = Camera.main;
+        trail.emitting = false;
     }
 
     private void Update()
     {
         if ((Input.GetMouseButton(0) || Input.touchCount > 0 ) && GameManager.Instance.player.canShoot)
         {
-            UIManager.Instance.DrawSwipeLine(rectTransform, followSpeed);
-            canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 1f, fadeSpeed * Time.deltaTime); // Fade in
-            isVisible = true;
-        } else if (isVisible)
+            Vector2 screenPos = InputManager.Instance.inputPosition;
+            transform.position = camera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 5f));
+            StartCoroutine(StartTrailAfterDelay(0.01f));
+        }
+        else
         {
-            canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 0f, fadeSpeed * Time.deltaTime); // Fade out
-
-            if (canvasGroup.alpha < 0.01f)
-                isVisible = false;
+            trail.emitting = false;
         }
     }
+    
+    private IEnumerator StartTrailAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        trail.emitting = true;
+    }
+
 }

@@ -13,12 +13,14 @@ public class DifficultyManager : MonoBehaviour
     
     private void Awake()
     {
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            Destroy(gameObject);
+            return;
         }
-        else Destroy(gameObject);
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     public void SetDifficulty(DifficultyLevel difficulty)

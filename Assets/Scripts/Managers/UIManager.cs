@@ -7,7 +7,16 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
-    [SerializeField] private Camera camera;
+    [Header("UI References")] [SerializeField]
+    private GameObject mainMenuUI;
+
+    [SerializeField] private GameObject gameplayUI;
+    [SerializeField] private GameObject rewardUI;
+    [SerializeField] private GameObject background;
+
+    [Header("Match UI Elements")] [SerializeField]
+    private Camera camera;
+
     [SerializeField] private Canvas canvas;
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private TextMeshProUGUI opponentScoreText;
@@ -21,81 +30,37 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    private void Update()
+    public void OnStartGame()
     {
-        UpdateInputBarValue();
-    }
-    public void UpdateScore(int newScore, MatchPlayer matchPlayer)
-    {
-        if (matchPlayer.playerType == MatchPlayer.PlayerType.Player)
-        {
-            playerScoreText.text = $"{newScore}";
-        }
-        else
-        {
-            opponentScoreText.text = $"{newScore}";
-        }
+        background.SetActive(false);
+        mainMenuUI.SetActive(false);
+        gameplayUI.SetActive(true);
+        rewardUI.SetActive(false);
     }
 
-    
-
-    public void ShowScoreFlyer(int points, Vector3 worldPosition)
+    public void OnEndGame()
     {
-
-        // Project the world position to UI screen position
-        Vector3 screenPos = camera.WorldToScreenPoint(worldPosition);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.transform as RectTransform,
-            screenPos,
-            camera,
-            out Vector2 localPoint
-        );
-
-        GameObject flyer = Instantiate(scoreFlyerPrefab, canvas.gameObject.transform);
-        transform.localPosition = localPoint;
-        flyer.GetComponent<ScoreFlyer>().Initialize(points);
+        background.SetActive(true);
+        mainMenuUI.SetActive(false);
+        gameplayUI.SetActive(false);
+        rewardUI.SetActive(true);
     }
     
-    public void DrawSwipeLine(RectTransform rectTransform, float followSpeed)
+    public void GoBackToMenu()
     {
-        Vector2 screenPos = InputManager.Instance.inputPosition;
-
-        // Project to UI space
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.transform as RectTransform,
-            screenPos,
-            camera,
-            out Vector2 uiSpacePos
-        );
-        
-        rectTransform.anchoredPosition = Vector2.Lerp(
-            rectTransform.anchoredPosition, uiSpacePos, followSpeed * Time.deltaTime); // Lerp for smooth follow
-    }
-
-    public void UpdateTimer(float time)
-    {
-        // Time format: mm:ss
-        int minutes = Mathf.FloorToInt(time / 60f);
-        int seconds = Mathf.FloorToInt(time % 60f);
-        timerText.text = $"{minutes:00}:{seconds:00}";
-    }
-
-    private void UpdateInputBarValue()
-    {
-        float delta = InputManager.Instance.incrementalSwipeDelta;
-        inputBarFill.fillAmount = Mathf.Clamp01(
-            inputBarFill.fillAmount + delta * inputBarFillSpeed);
-    }
-    public void ResetInputBar()
-    {
-        inputBarFill.fillAmount = 0f;
+        background.SetActive(true);
+        mainMenuUI.SetActive(true);
+        gameplayUI.SetActive(false);
+        rewardUI.SetActive(false);
     }
 }

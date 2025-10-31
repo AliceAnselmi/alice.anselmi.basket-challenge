@@ -5,7 +5,6 @@ using UnityEngine.UI;
 public class MainMenuUI : MonoBehaviour
 {
 
-    [SerializeField] private SceneData sceneData;
     [SerializeField] private Button playButton;
     [SerializeField] private Button easyButton;
     [SerializeField] private Button mediumButton;
@@ -40,7 +39,12 @@ public class MainMenuUI : MonoBehaviour
     
     private void PlayGame()
     {
-        SceneManager.LoadScene(sceneData.gameplayIndex);
+        playButton.gameObject.SetActive(true);
+        easyButton.gameObject.SetActive(false);
+        mediumButton.gameObject.SetActive(false);
+        hardButton.gameObject.SetActive(false);
+        GameManager.Instance.ResetMatch();
+        GameManager.Instance.StartGame();
     }
     
 }

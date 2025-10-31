@@ -7,6 +7,7 @@ public class MatchPlayer : MonoBehaviour
     public Ball ball;
     public Transform ballTransform;
     public int score;
+    public int positionIndex;
     public bool canShoot;
     public bool isAI;
     

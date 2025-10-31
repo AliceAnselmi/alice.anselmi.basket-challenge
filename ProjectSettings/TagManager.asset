@@ -9,6 +9,7 @@ TagManager:
   - Backboard
   - Floor
   - BallSpawnPoint
+  - Net
   layers:
   - Default
   - TransparentFX

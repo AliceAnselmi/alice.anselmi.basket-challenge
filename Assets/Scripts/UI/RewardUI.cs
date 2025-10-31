@@ -1,17 +1,42 @@
-using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RewardUI : MonoBehaviour
 {
-    [SerializeField] private SceneData sceneData;
+    [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI opponentScoreText;
+    [SerializeField] private TextMeshProUGUI resultText;
+    
+    private void OnEnable()
+    {
+        int playerScore = GameManager.Instance.player.score;
+        int opponentScore = GameManager.Instance.opponent.score;
+        playerScoreText.text = $"{playerScore}";
+        opponentScoreText.text = $"{opponentScore}";
+        if (playerScore > opponentScore)
+        {
+            resultText.text = "YOU WIN!";
+        }
+        else if (playerScore < opponentScore)
+        {
+            resultText.text = "YOU LOSE";
+        }
+        else
+        {
+            resultText.text = "TIE!";
+        }
+    }
     public void GoBackToMenu()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneData.mainMenuIndex);
+        UIManager.Instance.GoBackToMenu();
     }
     
     public void PlayAgain()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneData.gameplayIndex);
+        GameManager.Instance.ResetMatch();
+        UIManager.Instance.OnStartGame();
     }
+
+
 }

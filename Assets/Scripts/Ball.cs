@@ -61,6 +61,7 @@ public class Ball : MonoBehaviour
         Vector2 ringCenterXZ = new Vector2(ringCenter.x, ringCenter.z);
         Vector2 ballXZ = new Vector2(transform.position.x, transform.position.z);
         float horizontalDistance = Vector2.Distance(ringCenterXZ, ballXZ);
+        float verticalDistance = Mathf.Abs(transform.position.y - ringCenter.y);
         
         // Only score if ball is falling
         if (m_RigidBody.velocity.y >= 0) return;
@@ -77,7 +78,7 @@ public class Ball : MonoBehaviour
                 m_Scored = true;
                 GameManager.Instance.ScoreShot(owner);
             }
-            else // Did not hit ring: perfect shot
+            else if (verticalDistance < 0.1f) // Perfect shot (additional check on vertical distance for better accuracy)
             {
                 m_Scored = true;
                 GameManager.Instance.ScorePerfectShot(owner);
@@ -144,17 +145,17 @@ public class Ball : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        if (other.collider.CompareTag("Floor"))
+        switch(other.collider.tag)
         {
-            GameManager.Instance.RefreshMatch(owner);
-        }
-        else if (other.collider.CompareTag("Ring"))
-        {
-            m_HitRing = true;
-        }
-        else if (other.collider.CompareTag("Backboard"))
-        {
-            m_HitBackboard = true;
+            case "Floor":
+                GameManager.Instance.SetupNewShot(owner);
+                break;
+            case "Ring":
+                m_HitRing = true;
+                break;
+            case "Backboard":
+                m_HitBackboard = true;
+                break;
         }
     }
 

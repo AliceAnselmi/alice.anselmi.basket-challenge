@@ -21,12 +21,11 @@ public class GameManager : MonoBehaviour
     public MatchPlayer opponent;
 
     [Header("References")]
+    [SerializeField] private GameplayUI gameplayUI;
     [SerializeField] private GameObject ballPrefab;
     [SerializeField] private CameraController cameraController;
-    [SerializeField] private SceneData sceneData;
     public ScoreData scoreData;
     public MeshCollider ringCollider;
-
 
     [Header("Aim Transforms")]
     public Transform ringAimTransform;
@@ -36,18 +35,21 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
+        Physics.gravity = new Vector3(0, gravity, 0);
 
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+            Destroy(gameObject);
+            return;
         }
-        else Destroy(gameObject);
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    public void StartGame()
     {
-        Physics.gravity = new Vector3(0, gravity, 0);
+        UIManager.Instance.OnStartGame();
         timer = matchDuration;
         StartCoroutine(TimerRoutine());
 
@@ -63,7 +65,7 @@ public class GameManager : MonoBehaviour
         while (timer > 0)
         {
             timer -= 1f;
-            UIManager.Instance.UpdateTimer(timer);
+            gameplayUI.UpdateTimer(timer);
             yield return delay;
         }
         EndGame();
@@ -104,7 +106,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void RefreshMatch(MatchPlayer matchPlayer)
+    public void SetupNewShot(MatchPlayer matchPlayer)
     {
         if (gameEnded) return;
         
@@ -114,7 +116,7 @@ public class GameManager : MonoBehaviour
         if (matchPlayer.playerType == MatchPlayer.PlayerType.Player)
         {
             InputManager.Instance.hasInputEnded = false;
-            UIManager.Instance.ResetInputBar();
+            gameplayUI.ResetInputBar();
             shootForce = 0f;
             SetupCamera(false);
         }
@@ -125,7 +127,7 @@ public class GameManager : MonoBehaviour
     
     private void MovePlayerToNextPosition(MatchPlayer playerToMove)
     {
-        Transform nextPos = ShootingPositionsManager.Instance.GetNextPosition();
+        Transform nextPos = ShootingPositionsManager.Instance.MoveToNextPosition(playerToMove);
         playerToMove.transform.position = nextPos.position;
 
         Vector3 playerToRing = ringAimTransform.position - playerToMove.transform.position;
@@ -134,7 +136,7 @@ public class GameManager : MonoBehaviour
     }
     public void ScorePerfectShot(MatchPlayer matchPlayer)
     {
-        UpdateScore(matchPlayer, scoreData.perfectShotScore);
+        AddAmountToScore(matchPlayer, scoreData.perfectShotScore);
     }
     
     public void SetupCamera(bool followBall)
@@ -163,21 +165,23 @@ public class GameManager : MonoBehaviour
     
     public void ScoreShot(MatchPlayer matchPlayer)
     {
-        UpdateScore(matchPlayer, scoreData.normalShotScore);
+        AddAmountToScore(matchPlayer, scoreData.normalShotScore);
     }
 
     public void ScoreBackboardShot(MatchPlayer matchPlayer) 
     {
-        UpdateScore(matchPlayer, scoreData.currentBonusScore);
+        AddAmountToScore(matchPlayer, scoreData.currentBonusScore);
     }
 
-    private void UpdateScore(MatchPlayer matchPlayer, int amount)
+    private void AddAmountToScore(MatchPlayer matchPlayer, int amount)
     {
+        if (timer < 0) // Prevent from scoring when time's up
+            return;
         matchPlayer.score += amount;
-        UIManager.Instance.UpdateScore(matchPlayer.score, matchPlayer);
+        gameplayUI.UpdateScore(matchPlayer.score, matchPlayer);
         if (matchPlayer == player)
         {
-            UIManager.Instance.ShowScoreFlyer(amount, matchPlayer.ballTransform.position);
+            gameplayUI.ShowScoreFlyer(amount, matchPlayer.ballTransform.position);
         }
         
     }
@@ -197,8 +201,26 @@ public class GameManager : MonoBehaviour
     }
     private void EndGame()
     {
+        player.canShoot = false;
+        opponent.canShoot = false;
         gameEnded = true;
-        SceneManager.LoadScene(sceneData.rewardIndex);
+        UIManager.Instance.OnEndGame();
+    }
+    
+    public void ResetMatch()
+    {
+        player.score = 0;
+        opponent.score = 0;
+        gameplayUI.UpdateScore(player.score, player);
+        gameplayUI.UpdateScore(opponent.score, opponent);
+        player.transform.position = ShootingPositionsManager.Instance.MoveToPositionAtIndex(player, 0).position;
+        opponent.transform.position = ShootingPositionsManager.Instance.MoveToPositionAtIndex(opponent, 1).position;
+        gameEnded = false;
+        timer = matchDuration;
+        RespawnBall(player);
+        RespawnBall(opponent);
+        cameraController.StopFollowingBall();
+        StartGame();
     }
 
 }
