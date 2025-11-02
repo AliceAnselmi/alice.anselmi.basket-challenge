@@ -21,14 +21,17 @@ public class ShootingPositionsManager : MonoBehaviour
     
     public Transform MoveToNextPosition(MatchPlayer playerToMove)
     {
-        SetPositionOccupied(playerToMove.positionIndex, false);
-        if(!GetPositionOccupied((playerToMove.positionIndex +1)%shootingPositions.Count))
+        int oldPositionIndex = playerToMove.positionIndex;
+        int newPositionIndex = 0;
+        SetPositionOccupied(oldPositionIndex, false);
+        if(!GetPositionOccupied((oldPositionIndex + 1)%shootingPositions.Count))
         {
-            playerToMove.positionIndex=(playerToMove.positionIndex +1)%shootingPositions.Count;
+            newPositionIndex = (oldPositionIndex + 1)%shootingPositions.Count;
         } else
         {
-            playerToMove.positionIndex+=(playerToMove.positionIndex +2)%shootingPositions.Count;
+            newPositionIndex = (oldPositionIndex + 2)%shootingPositions.Count;
         }
+        playerToMove.positionIndex = newPositionIndex;
         SetPositionOccupied(playerToMove.positionIndex, true);
         return GetPositionAtIndex(playerToMove.positionIndex);
     }

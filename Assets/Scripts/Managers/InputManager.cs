@@ -7,6 +7,7 @@ public class InputManager : MonoBehaviour
     [HideInInspector] public float incrementalSwipeDelta = 0f;
     [HideInInspector] public bool hasInputEnded = false;
     [HideInInspector] public Vector2 inputPosition;
+    [SerializeField] private SwipeFeedback swipeFeedback;
     private float m_PreviousTouchY = 0f;
     private Vector2 startTouch;
 
@@ -94,6 +95,7 @@ public class InputManager : MonoBehaviour
     
     private void OnInputEnd()
     {
+        SoundManager.PlaySound(Sound.SHOOT);
         incrementalSwipeDelta = 0f;
         hasInputEnded = true;
     }

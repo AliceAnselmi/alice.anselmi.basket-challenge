@@ -24,12 +24,14 @@ public class SwipeFeedback : MonoBehaviour
         }
         else
         {
+            transform.position = Vector2.zero;
             trail.emitting = false;
         }
     }
     
     private IEnumerator StartTrailAfterDelay(float delay)
     {
+        trail.Clear();
         yield return new WaitForSeconds(delay);
         trail.emitting = true;
     }

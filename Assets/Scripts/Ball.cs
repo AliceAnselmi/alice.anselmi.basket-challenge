@@ -148,12 +148,14 @@ public class Ball : MonoBehaviour
         switch(other.collider.tag)
         {
             case "Floor":
+                SoundManager.PlaySound(Sound.HIT_FLOOR);
                 GameManager.Instance.SetupNewShot(owner);
                 break;
             case "Ring":
                 m_HitRing = true;
                 break;
             case "Backboard":
+                SoundManager.PlaySound(Sound.HIT_BACKBOARD);
                 m_HitBackboard = true;
                 break;
         }

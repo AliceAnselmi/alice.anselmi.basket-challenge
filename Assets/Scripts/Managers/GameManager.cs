@@ -134,10 +134,6 @@ public class GameManager : MonoBehaviour
         playerToRing.y = 0;
         playerToMove.transform.rotation = Quaternion.LookRotation(playerToRing);
     }
-    public void ScorePerfectShot(MatchPlayer matchPlayer)
-    {
-        AddAmountToScore(matchPlayer, scoreData.perfectShotScore);
-    }
     
     public void SetupCamera(bool followBall)
     {
@@ -153,9 +149,10 @@ public class GameManager : MonoBehaviour
             Destroy(matchPlayer.ball.gameObject);
 
         GameObject newBall = InstantiateBall(matchPlayer.ballSpawnPoint.position);
-        matchPlayer.ball = newBall.GetComponent<Ball>();
-        matchPlayer.ballTransform = matchPlayer.ball.transform;
-        matchPlayer.ball.owner = matchPlayer;
+        Ball ball = newBall.GetComponent<Ball>();
+        ball.owner = matchPlayer;
+        matchPlayer.ball = ball;
+        matchPlayer.ballTransform = newBall.transform;
     }
 
     private GameObject InstantiateBall(Vector3 position)
@@ -165,12 +162,23 @@ public class GameManager : MonoBehaviour
     
     public void ScoreShot(MatchPlayer matchPlayer)
     {
+        if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
+            SoundManager.PlaySound(Sound.SCORE);
         AddAmountToScore(matchPlayer, scoreData.normalShotScore);
     }
 
     public void ScoreBackboardShot(MatchPlayer matchPlayer) 
     {
+        if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
+            SoundManager.PlaySound(Sound.SCORE);
         AddAmountToScore(matchPlayer, scoreData.currentBonusScore);
+    }
+    
+    public void ScorePerfectShot(MatchPlayer matchPlayer)
+    {
+        if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
+            SoundManager.PlaySound(Sound.PERFECT_SCORE);
+        AddAmountToScore(matchPlayer, scoreData.perfectShotScore);
     }
 
     private void AddAmountToScore(MatchPlayer matchPlayer, int amount)
