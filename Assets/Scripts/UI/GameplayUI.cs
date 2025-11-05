@@ -14,6 +14,7 @@ public class GameplayUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI opponentScoreText;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private GameObject scoreFlyerPrefab;
+    [SerializeField] private GameObject perfectScoreFlyerPrefab;
     [SerializeField] private Image inputBarFill;
     [SerializeField] private float inputBarFillSpeed = 1f;
 
@@ -41,7 +42,23 @@ public class GameplayUI : MonoBehaviour
 
     public void ShowScoreFlyer(int points, Vector3 worldPosition)
     {
+        // Project the world position to UI screen position
+        Vector3 localPoint = ProjectToScreen(worldPosition);
+        GameObject flyer = Instantiate(scoreFlyerPrefab, canvas.gameObject.transform);
+        flyer.GetComponent<RectTransform>().localPosition = localPoint;
+        flyer.GetComponent<ScoreFlyer>().Initialize(points);
+    }
 
+    public void ShowPerfectScoreFlyer(Vector3 worldPosition)
+    {
+        worldPosition.y += 0.5f; // Move up the flyer a bit so that it doesn't overlap with the score flyer
+        Vector3 localPoint = ProjectToScreen(worldPosition);
+        GameObject flyer = Instantiate(perfectScoreFlyerPrefab, canvas.gameObject.transform);
+        flyer.GetComponent<RectTransform>().localPosition = localPoint;
+    }
+
+    private Vector3 ProjectToScreen(Vector3 worldPosition)
+    {
         // Project the world position to UI screen position
         Vector3 screenPos = camera.WorldToScreenPoint(worldPosition);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -50,10 +67,7 @@ public class GameplayUI : MonoBehaviour
             camera,
             out Vector2 localPoint
         );
-
-        GameObject flyer = Instantiate(scoreFlyerPrefab, canvas.gameObject.transform);
-        flyer.GetComponent<RectTransform>().localPosition = localPoint;
-        flyer.GetComponent<ScoreFlyer>().Initialize(points);
+        return localPoint;
     }
     public void UpdateTimer(float time)
     {

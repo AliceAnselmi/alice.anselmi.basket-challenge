@@ -35,7 +35,7 @@ public class Backboard : MonoBehaviour
     
     private void RollBonus()
     {
-        if (GameManager.Instance.isBackboardBonusActive) return;
+        if (!GameManager.Instance.gameStarted || GameManager.Instance.isBackboardBonusActive) return;
 
         if (Random.value < backboardBonusChance)
         {

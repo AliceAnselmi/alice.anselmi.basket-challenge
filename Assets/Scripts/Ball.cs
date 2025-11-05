@@ -37,7 +37,7 @@ public class Ball : MonoBehaviour
         if (owner.playerType == MatchPlayer.PlayerType.Player
             && owner.canShoot
             && InputManager.Instance.hasInputEnded
-            && !GameManager.Instance.gameEnded
+            && GameManager.Instance.gameStarted
             )
         {
             ShootBall();

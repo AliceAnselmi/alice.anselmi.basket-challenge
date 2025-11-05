@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float matchDuration = 120f; // two minutes in seconds
     [SerializeField] private float gravity = -9.81f;
     [HideInInspector] public float shootForce = 0f;
-    [HideInInspector] public bool gameEnded;
+    [HideInInspector] public bool gameStarted;
     public bool isBackboardBonusActive = false;
     private float timer;
 
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
     
     private IEnumerator OpponentAIAutoShootRoutine()
     {
-        while (!gameEnded)
+        while (gameStarted)
         {
             // Wait for a random time based on difficulty
             float wait = Random.Range(DifficultyManager.Instance.shootIntervalMin, DifficultyManager.Instance.shootIntervalMax);
@@ -108,7 +108,7 @@ public class GameManager : MonoBehaviour
 
     public void SetupNewShot(MatchPlayer matchPlayer)
     {
-        if (gameEnded) return;
+        if (!gameStarted) return;
         
         MovePlayerToNextPosition(matchPlayer);
 
@@ -179,6 +179,10 @@ public class GameManager : MonoBehaviour
         if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
             SoundManager.PlaySound(Sound.PERFECT_SCORE);
         AddAmountToScore(matchPlayer, scoreData.perfectShotScore);
+        if (matchPlayer == player)
+        {
+            gameplayUI.ShowPerfectScoreFlyer(matchPlayer.ballTransform.position);
+        }
     }
 
     private void AddAmountToScore(MatchPlayer matchPlayer, int amount)
@@ -211,7 +215,7 @@ public class GameManager : MonoBehaviour
     {
         player.canShoot = false;
         opponent.canShoot = false;
-        gameEnded = true;
+        gameStarted = false;
         UIManager.Instance.OnEndGame();
     }
     
@@ -223,7 +227,7 @@ public class GameManager : MonoBehaviour
         gameplayUI.UpdateScore(opponent.score, opponent);
         player.transform.position = ShootingPositionsManager.Instance.MoveToPositionAtIndex(player, 0).position;
         opponent.transform.position = ShootingPositionsManager.Instance.MoveToPositionAtIndex(opponent, 1).position;
-        gameEnded = false;
+        gameStarted = true;
         timer = matchDuration;
         RespawnBall(player);
         RespawnBall(opponent);
