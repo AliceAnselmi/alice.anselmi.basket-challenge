@@ -10,10 +10,12 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private Button easyButton;
     [SerializeField] private Button mediumButton;
     [SerializeField] private Button hardButton;
+    [SerializeField] private GameObject gameLogo;
     
     
     public void OnPlayButtonPressed()
     {
+        gameLogo.SetActive(false);
         playButton.gameObject.SetActive(false);
         easyButton.gameObject.SetActive(true);
         mediumButton.gameObject.SetActive(true);
