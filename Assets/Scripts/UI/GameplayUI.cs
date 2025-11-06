@@ -6,9 +6,8 @@ using UnityEngine.UI;
 public class GameplayUI : MonoBehaviour
 {
 
-    [Header("Match UI Elements")] [SerializeField]
-    private Camera camera;
-
+    [Header("Match UI Elements")]
+    [SerializeField] private Camera mainCamera;
     [SerializeField] private Canvas canvas;
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private TextMeshProUGUI opponentScoreText;
@@ -67,11 +66,11 @@ public class GameplayUI : MonoBehaviour
     private Vector3 ProjectToScreen(Vector3 worldPosition)
     {
         // Project the world position to UI screen position
-        Vector3 screenPos = camera.WorldToScreenPoint(worldPosition);
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(worldPosition);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvas.transform as RectTransform,
             screenPos,
-            camera,
+            mainCamera,
             out Vector2 localPoint
         );
         return localPoint;

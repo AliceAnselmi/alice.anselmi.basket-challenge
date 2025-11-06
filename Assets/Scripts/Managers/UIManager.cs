@@ -14,9 +14,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject rewardUI;
     [SerializeField] private GameObject background;
 
-    [Header("Match UI Elements")] [SerializeField]
-    private Camera camera;
-
+    [Header("Match UI Elements")]
+    [SerializeField] private Camera mainCamera;
     [SerializeField] private Canvas canvas;
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private TextMeshProUGUI opponentScoreText;
@@ -62,5 +61,13 @@ public class UIManager : MonoBehaviour
         mainMenuUI.SetActive(true);
         gameplayUI.SetActive(false);
         rewardUI.SetActive(false);
+    }
+
+    public void DrawSwipeLine(RectTransform rectTransform, float followSpeed)
+    {
+        Vector2 screenPos = InputManager.Instance.inputPosition;
+
+        rectTransform.position = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0.5f));
+
     }
 }
