@@ -15,6 +15,7 @@ public class GameplayUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private GameObject scoreFlyerPrefab;
     [SerializeField] private GameObject perfectScoreFlyerPrefab;
+    [SerializeField] private GameObject backboardScoreFlyerPrefab;
     [SerializeField] private Image inputBarFill;
     [SerializeField] private float inputBarFillSpeed = 1f;
 
@@ -38,8 +39,6 @@ public class GameplayUI : MonoBehaviour
         }
     }
 
-
-
     public void ShowScoreFlyer(int points, Vector3 worldPosition)
     {
         // Project the world position to UI screen position
@@ -54,6 +53,14 @@ public class GameplayUI : MonoBehaviour
         worldPosition.y += 0.5f; // Move up the flyer a bit so that it doesn't overlap with the score flyer
         Vector3 localPoint = ProjectToScreen(worldPosition);
         GameObject flyer = Instantiate(perfectScoreFlyerPrefab, canvas.gameObject.transform);
+        flyer.GetComponent<RectTransform>().localPosition = localPoint;
+    }
+    
+    public void ShowBackboardScoreFlyer(Vector3 worldPosition)
+    {
+        worldPosition.y += 0.5f; // Move up the flyer a bit so that it doesn't overlap with the score flyer
+        Vector3 localPoint = ProjectToScreen(worldPosition);
+        GameObject flyer = Instantiate(backboardScoreFlyerPrefab, canvas.gameObject.transform);
         flyer.GetComponent<RectTransform>().localPosition = localPoint;
     }
 

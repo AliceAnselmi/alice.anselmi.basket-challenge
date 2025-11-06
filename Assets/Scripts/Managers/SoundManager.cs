@@ -4,7 +4,7 @@ using UnityEngine;
 public enum Sound
 {
     SCORE,
-    PERFECT_SCORE,
+    SPECIAL_SCORE,
     HIT_BACKBOARD,
     HIT_FLOOR,
     SHOOT,
@@ -36,7 +36,7 @@ public class SoundManager : MonoBehaviour
         m_SoundVolumeMap = new Dictionary<Sound, float>
         {
             { Sound.SCORE, soundData.scoreSoundVolume },
-            { Sound.PERFECT_SCORE, soundData.perfectScoreSoundVolume },
+            { Sound.SPECIAL_SCORE, soundData.perfectScoreSoundVolume },
             { Sound.HIT_BACKBOARD, soundData.hitBackboardSoundVolume },
             { Sound.HIT_FLOOR, soundData.hitFloorSoundVolume },
             { Sound.SHOOT, soundData.shootSoundVolume },

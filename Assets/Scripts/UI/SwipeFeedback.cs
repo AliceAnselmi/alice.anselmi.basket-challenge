@@ -6,6 +6,8 @@ public class SwipeFeedback : MonoBehaviour
 {
     [SerializeField] private TrailRenderer trail;
     [SerializeField] private Camera camera;
+    [SerializeField] private float distanceFromCamera = 1f; // added for adjustments if needed
+    private bool m_IsActive = false;
 
     private void Awake()
     {
@@ -18,21 +20,14 @@ public class SwipeFeedback : MonoBehaviour
     {
         if ((Input.GetMouseButton(0) || Input.touchCount > 0 ) && GameManager.Instance.player.canShoot)
         {
-            StartCoroutine(StartTrailAfterDelay(0.01f));
+            trail.emitting = true;        
+            Vector2 screenPos = InputManager.Instance.inputPosition;
+            transform.position = camera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, distanceFromCamera));
         }
         else
         {
             trail.emitting = false;
         }
-        Vector2 screenPos = InputManager.Instance.inputPosition;
-        transform.position = camera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 5f));
-        
-    }
-    
-    private IEnumerator StartTrailAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        trail.emitting = true;
     }
 
 }

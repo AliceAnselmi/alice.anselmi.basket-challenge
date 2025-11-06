@@ -170,14 +170,18 @@ public class GameManager : MonoBehaviour
     public void ScoreBackboardShot(MatchPlayer matchPlayer) 
     {
         if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
-            SoundManager.PlaySound(Sound.SCORE);
+            SoundManager.PlaySound(Sound.SPECIAL_SCORE);
         AddAmountToScore(matchPlayer, scoreData.currentBonusScore);
+        if (matchPlayer == player)
+        {
+            gameplayUI.ShowBackboardScoreFlyer(matchPlayer.ballTransform.position);
+        }
     }
     
     public void ScorePerfectShot(MatchPlayer matchPlayer)
     {
         if(matchPlayer.playerType == MatchPlayer.PlayerType.Player)
-            SoundManager.PlaySound(Sound.PERFECT_SCORE);
+            SoundManager.PlaySound(Sound.SPECIAL_SCORE);
         AddAmountToScore(matchPlayer, scoreData.perfectShotScore);
         if (matchPlayer == player)
         {

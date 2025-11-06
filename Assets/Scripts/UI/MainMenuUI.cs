@@ -53,6 +53,7 @@ public class MainMenuUI : MonoBehaviour
         // Avoiding immediate shooting after scene load because of input from button
         yield return new WaitForSeconds(delay);
         playButton.gameObject.SetActive(true);
+        gameLogo.SetActive(true);
         GameManager.Instance.ResetMatch();
         GameManager.Instance.StartGame();
     }

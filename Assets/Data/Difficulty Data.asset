@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 444fdf6b0caea704fb1f090f84548447, type: 3}
   m_Name: Difficulty Data
   m_EditorClassIdentifier: 
-  easyAccuracy: 0.8
-  easyAimError: 0.05
-  easyShootIntervalMin: 0
+  easyAccuracy: 0.2
+  easyAimError: 0.15
+  easyShootIntervalMin: 2
   easyShootIntervalMax: 3
-  mediumAccuracy: 0.6
+  mediumAccuracy: 0.5
   mediumAimError: 0.1
   mediumShootIntervalMin: 1
   mediumShootIntervalMax: 2.5
-  hardAccuracy: 0.4
-  hardAimError: 0.15
-  hardShootIntervalMin: 1.5
+  hardAccuracy: 0.8
+  hardAimError: 0.05
+  hardShootIntervalMin: 0.5
   hardShootIntervalMax: 2

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -52,11 +53,17 @@ public class CameraController : MonoBehaviour
     public void StartFollowingBall(Transform newBallTransform)
     {
         ballTransform = newBallTransform;
-        m_FollowingBall = true;
+        StartCoroutine(SetFollowBallAfterDelay(0.1f, true));
     }
 
     public void StopFollowingBall()
     {
-        m_FollowingBall = false;
+        StartCoroutine(SetFollowBallAfterDelay(0.1f, false));
+    }
+    
+    private IEnumerator SetFollowBallAfterDelay(float delay, bool follow)
+    {
+        yield return new WaitForSeconds(delay);
+        m_FollowingBall = follow;
     }
 }
