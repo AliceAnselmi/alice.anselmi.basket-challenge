@@ -47,7 +47,7 @@ public class InputManager : MonoBehaviour
                 OnInputStart();
                 break;
             case TouchPhase.Moved:
-                incrementalSwipeDelta = (touch.position.y - m_PreviousTouchY) / Screen.height;
+                incrementalSwipeDelta = (touch.position.y - m_PreviousTouchY) / Screen.height * 1.5f; // Increased sensitivity for touch
                 inputPosition = touch.position;
                 OnInputHold();
                 m_PreviousTouchY = touch.position.y;
